@@ -51,7 +51,12 @@ HYPRE_Int hypre_map27( HYPRE_Int  ix, HYPRE_Int  iy, HYPRE_Int  iz,
 }
 #endif
 #define SECOND_TIME 0
- 
+
+extern void init_timestep_();
+extern void begin_timestep_();
+extern void end_timestep_();
+extern void exit_timestep_();
+
 hypre_int
 main( hypre_int argc,
       char *argv[] )
@@ -102,15 +107,15 @@ main( hypre_int argc,
    HYPRE_Int first_local_row, last_local_row, local_num_rows;
    HYPRE_Int first_local_col, last_local_col, local_num_cols;
 
-   HYPRE_Int time_steps = 6;
+   HYPRE_Int time_steps = 1006;
 
    /* parameters for BoomerAMG */
    HYPRE_Int    P_max_elmts = 8;
    HYPRE_Int    cycle_type;
    HYPRE_Int    coarsen_type = 8;
    HYPRE_Int    measure_type = 0;
-   HYPRE_Int    num_sweeps = 2;  
-   HYPRE_Int    relax_type = 18;   
+   HYPRE_Int    num_sweeps = 2;
+   HYPRE_Int    relax_type = 18;
    HYPRE_Int    rap2=1;
    HYPRE_Int    keepTranspose = 0;
    HYPRE_Real   tol = 1.e-8, pc_tol = 0.;
@@ -136,6 +141,7 @@ main( hypre_int argc,
 
    HYPRE_Real *values;
 
+   init_timestep_();
    /*-----------------------------------------------------------
     * Initialize some stuff
     *-----------------------------------------------------------*/
@@ -195,7 +201,7 @@ main( hypre_int argc,
 	 {
 	    solver_id = 3;
 	 }
-         
+
       }
       else if ( strcmp(argv[arg_index], "-printstats") == 0 )
       {
@@ -330,7 +336,7 @@ main( hypre_int argc,
    hypre_PrintTiming("IJ Vector Setup", &wall_time, hypre_MPI_COMM_WORLD);
    hypre_FinalizeTiming(time_index);
    hypre_ClearTiming();
-   
+
    /*-----------------------------------------------------------
     * Print out the system and initial guess
     *-----------------------------------------------------------*/
@@ -353,7 +359,7 @@ main( hypre_int argc,
       time_index = hypre_InitializeTiming("PCG Setup");
       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
       hypre_BeginTiming(time_index);
- 
+
       HYPRE_ParCSRPCGCreate(hypre_MPI_COMM_WORLD, &pcg_solver);
       HYPRE_PCGSetMaxIter(pcg_solver, max_iter);
       HYPRE_PCGSetTol(pcg_solver, tol);
@@ -381,7 +387,7 @@ main( hypre_int argc,
                              (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
                              (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup,
                              pcg_precond);
- 
+
       HYPRE_PCGGetPrecond(pcg_solver, &pcg_precond_gotten);
       if (pcg_precond_gotten !=  pcg_precond)
       {
@@ -461,6 +467,7 @@ main( hypre_int argc,
       hypre_BeginTiming(time_index);
       for (j=0; j < time_steps; j++)
       {
+         begin_timestep_();
  
          HYPRE_ParCSRGMRESCreate(hypre_MPI_COMM_WORLD, &pcg_solver);
          HYPRE_GMRESSetKDim(pcg_solver, k_dim);
@@ -550,6 +557,7 @@ main( hypre_int argc,
             HYPRE_ParVectorSetConstantValues(x,0.0);
             HYPRE_ParVectorSetConstantValues(b,1.0);
          }
+         end_timestep_();
       }
       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
       hypre_EndTiming(time_index);
@@ -2343,5 +2351,6 @@ hypre_map27( HYPRE_Int  ix,
 {
    HYPRE_Int global_index = pz*Cz + py*Cy +px*Cx + iz*nxy + iy*nx + ix;
 
+   exit_timestep_();
    return global_index;
 }

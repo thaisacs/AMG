@@ -73,7 +73,7 @@ veryclean: clean
                                                                                                                                          
 amg: amg.o
 	@echo  "Linking" $@ "... "
-	${CC} -o amg amg.o ${LFLAGS}
+	${CC} -o amg amg.o ${LFLAGS} ../../../utils/kernel_stats.o
                  
 ##################################################################
 # Generic rules
