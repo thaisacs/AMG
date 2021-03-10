@@ -598,6 +598,7 @@ main( hypre_int argc,
 
    HYPRE_IJVectorDestroy(ij_x);
 
+   exit_timestep_();
 /*
   hypre_FinalizeMemoryDebug();
 */
@@ -2351,6 +2352,5 @@ hypre_map27( HYPRE_Int  ix,
 {
    HYPRE_Int global_index = pz*Cz + py*Cy +px*Cx + iz*nxy + iy*nx + ix;
 
-   exit_timestep_();
    return global_index;
 }
