@@ -55,6 +55,7 @@ HYPRE_Int hypre_map27( HYPRE_Int  ix, HYPRE_Int  iy, HYPRE_Int  iz,
 extern void init_timestep_();
 extern void begin_timestep_();
 extern void end_timestep_();
+extern void after_timestep_();
 extern void exit_timestep_();
 
 hypre_int
@@ -559,6 +560,7 @@ main( hypre_int argc,
          }
          end_timestep_();
       }
+      after_timestep_();
       hypre_MPI_Barrier(hypre_MPI_COMM_WORLD);
       hypre_EndTiming(time_index);
       hypre_PrintTiming("Problem 2: Cumulative AMG-GMRES Solve Time", &wall_time, hypre_MPI_COMM_WORLD);
